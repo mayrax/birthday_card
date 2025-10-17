@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>🎉 Sorpresaaaa 🎉</title>
+<style>
+  :root {
+    --bg1: #ffecd2;
+    --bg2: #fcb69f;
+    --ink: #222;
+    --muted: #6a6a6a;
+    --card: #ffffff;
+    --accent: #ff5fa2;
+    --night1: #0b1220; /* night gradients */
+    --night2: #02060f;
+  }
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    color: var(--ink);
+    background: radial-gradient(1200px 800px at 50% -10%, #fff 0, #fff0 60%), linear-gradient(135deg, var(--bg1), var(--bg2));
+    overflow: hidden;
+    transition: background 400ms ease, color 300ms ease;
+  }
+  .wrap { position: relative; height: 100%; width: 100%; }
+
+  /* Top heading */
+  header {
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 10;
+    padding: 8px 14px;
+    backdrop-filter: blur(6px);
+    background: #ffffff90;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px #00000014;
+    transition: background 300ms ease, color 300ms ease, opacity .45s ease, transform .45s ease;
+  }
+  header h1 { margin: 0; font-size: clamp(20px, 4vw, 34px); letter-spacing: .3px; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: .95rem; }
+  header.hidden { opacity: 0; transform: translate(-50%, -10px); pointer-events: none; }
+  header.hero { background: #ffffffd6; box-shadow: 0 10px 30px #00000024; border-radius: 12px; }
+  body.night header.hero { background: #0e1424e0; box-shadow: 0 10px 30px #00000066; }
+
+  /* Lights toggle */
+  .lights-toggle {
+    position: absolute;
+    top: 12px; right: 12px;
+    z-index: 11;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    border: 0; border-radius: 10px;
+    background: #ffffffa8;
+    color: #222;
+    font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 16px #0000001a;
+    backdrop-filter: blur(6px);
+    transition: background 300ms ease, color 300ms ease, transform 100ms;
+  }
+  .lights-toggle:active { transform: translateY(1px); }
+
+  /* Pre-birthday curtain */
+  .gate {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    background: linear-gradient(120deg, #ffffffd9, #fff0);
+    z-index: 15; padding: 24px;
+    transition: background 300ms ease, color 300ms ease;
+  }
+  .gate-card {
+    background: var(--card);
+    max-width: 720px; width: min(92vw, 720px);
+    border-radius: 16px; padding: 24px;
+    box-shadow: 0 16px 40px #0000001a;
+    text-align: center;
+  }
+
+  /* Center the gate inside the visual safe area */
+  .gate {
+    display: flex;                 /* more predictable than grid here */
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  /* Apply safe-area padding to the container (not the card) */
+  @supports (padding: max(0px)) {
+    .gate {
+      padding-left:  max(24px, env(safe-area-inset-left));
+      padding-right: max(24px, env(safe-area-inset-right));
+    }
+  }
+  /* Card stays truly centered and sized */
+  .gate-card {
+    margin: 0 auto;
+    box-sizing: border-box;
+    width: min(92vw, 720px);
+  }
+  /* Mobile tweaks: smaller title + comfy width */
+  @media (max-width: 480px) {
+    .gate-card { width: 92vw; padding: 18px 16px; }
+    .gate h2 { font-size: clamp(16px, 6vw, 22px); line-height: 1.2; }
+    .gate .countdown { font-size: clamp(13px, 4.2vw, 16px); }
+  }
+
+  .gate h2 { margin: 0 0 8px; font-size: clamp(20px, 4vw, 28px); }
+  .gate .countdown { font-variant-numeric: tabular-nums; font-size: 1.1rem; color: var(--muted); }
+  .gate .tip { margin-top: 14px; color: var(--muted); font-size: .95rem; }
+
+  /* Balloon field */
+  .field {
+    position: absolute; inset: 0;
+    overflow: hidden;
+    padding-top: 80px;
+  }
+
+  /* 🎆 Fireworks Canvas */
+  #fireworks {
+    position: fixed;
+    inset: 0;
+    z-index: 5;           /* behind header (z:10), gate (z:15), modal (z:20) */
+    pointer-events: none; /* don't block clicks on balloons */
+  }
+
+  /* Matte balloons */
+  .balloon {
+    position: absolute; left: 0; top: 0;
+    width: clamp(80px, 13vw, 140px);
+    aspect-ratio: 3 / 4;
+    border-radius: var(--br, 50% 50% 45% 55% / 60% 60% 40% 40%);
+    background: var(--c, #ff6b6b);
+    /* inner shading + subtle drop */
+    box-shadow:
+      inset -10px -14px 22px #00000014,
+      0 10px 22px #0000001f;
+    cursor: pointer;
+
+    /* independent transform props so pop animation doesn't override position */
+    translate: var(--tx, 0px) var(--ty, 0px);
+    rotate: var(--rot, 0deg);
+    will-change: translate, rotate, scale, box-shadow, filter;
+    transition: none !important;
+  }
+
+  /* tail (knot + string) */
+  .tail {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+    transform-origin: top center;
+    animation: sway 6s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  .knot {
+    width: 18px;
+    height: 16px;
+    margin: -6px auto 0;
+    background: var(--c);
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
+    filter: brightness(.92);
+  }
+  .string {
+    position: relative;
+    display: block;
+    width: 2px;
+    height: 100px;
+    margin: 0 auto;
+    pointer-events: none;
+  }
+
+  .string { transform-origin: top center; }
+
+  .string path {
+    fill: none;
+    stroke: #00000040;
+    stroke-width: 0.9;
+    stroke-linecap: round;
+  }
+
+  @keyframes sway { to { transform: translateX(-50%) translateX(4px) rotate(4deg); } }
+
+  /* Pop animation (scale/opacity only) */
+  .pop { animation: pop .1s ease forwards; }
+  @keyframes pop {
+    0%   { scale: 1;   opacity: 1; }
+    100% { scale: .15; opacity: 0; }
+  }
+
+  /* base collar */
+  .balloon::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -2px;
+    transform: translateX(-50%);
+    width: clamp(18px, 3vw, 28px);
+    height: clamp(9px, 1.5vw, 14px);
+    background: var(--c);         
+    border-radius: 50%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* night mode: darken a touch + soften with a glow */
+  body.night .balloon::after {
+    background: color-mix(in srgb, var(--c) 88%, #000 12%);
+    box-shadow:
+      inset 0 3px 6px #00000055,
+      0 0 10px color-mix(in srgb, var(--c) 45%, transparent);
+  }
+
+  /* Reveal modal */
+  /* Reveal modal */
+.modal {
+  position: fixed; inset: 0;
+  display: none;
+  align-items: center; justify-content: center;
+  background: #00000066;
+  z-index: 20; padding: 24px;
+}
+.modal.open { display: flex; }
+
+.card {
+  background: var(--card);
+  width: min(92vw, 820px);
+  /* NEW: keep the card within the viewport height */
+  max-height: 90svh;
+  border-radius: 16px; padding: 18px;
+  box-shadow: 0 20px 60px #00000030;
+  display: grid; gap: 14px;
+  /* NEW: header | content grows | actions */
+  grid-template-rows: auto 1fr auto;
+}
+
+.card header { position: static; transform: none; background: none; box-shadow: none; padding: 0; }
+.card h3 { margin: 0; }
+
+/* NEW: center media, allow inner scrolling if needed */
+.content {
+  display: grid; place-items: center;
+  gap: 10px;
+  overflow: auto;         /* only this area scrolls if media is tall */
+  padding: 6px;
+}
+
+/* Constrain media to card and preserve aspect (great for vertical video) */
+.content img,
+.content video {
+  max-width: 100%;
+  max-height: 76svh;      /* fits inside the card with header/actions */
+  width: auto;
+  height: auto;
+  object-fit: contain;    /* letterboxes instead of overflowing */
+  border-radius: 12px;
+  box-shadow: 0 8px 24px #00000014;
+}
+
+/* Optional: a bit tighter on small phones */
+@media (max-width: 480px) {
+  .content img,
+  .content video { max-height: 70svh; }
+}
+
+  .actions { display: flex; gap: 8px; justify-content: flex-end; }
+  button {
+    border: 0; border-radius: 10px; padding: 10px 14px;
+    background: var(--accent); color: white; font-weight: 600; cursor: pointer;
+  }
+  button.secondary { background: #e6e6e6; color: #222; }
+  .footer-note {
+    position: absolute; bottom: 8px; right: 10px; color: #00000066; font-size: 12px;
+  }
+
+  /* =========================
+     🌙 NIGHT MODE
+     ========================= */
+  body.night {
+    color: #e9eef9;
+    background:
+      radial-gradient(1400px 900px at 50% -20%, #1a2336 0, #0000 50%),
+      linear-gradient(135deg, var(--night1), var(--night2));
+      --card: #0e1424;
+      --ink:  #e9eef9;
+  }
+  body.night header {
+    background: #0e1424b3;
+    color: #dfe8ff;
+  }
+  body.night .gate { background: linear-gradient(120deg, #0b1220cc, #0000); }
+  body.night .string { background: #ffffff26; }
+  /* glow like lanterns */
+  body.night .balloon {
+    box-shadow:
+      inset -10px -14px 22px #00000066,
+      0 10px 22px #00000080,
+      0 0 14px var(--c),
+      0 0 38px color-mix(in srgb, var(--c) 55%, transparent);
+    filter: saturate(1.2) brightness(1.15);
+  }
+  /* button night styling */
+  body.night .lights-toggle {
+    background: #0e1424cc;
+    color: #e9eef9;
+  }
+  /* put this near the end of your <style> */
+  @media (max-width: 480px) {
+    .lights-toggle {
+      padding: 6px 8px;      /* smaller hit area */
+      gap: 0;
+      font-size: 10px;
+      line-height: 1;
+    }
+  }
+
+  /* Grand finale overlay */
+  .finale-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, #ffffffdd 0%, #000000cc 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease;
+  }
+  .finale-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .finale-message {
+    font-size: clamp(28px, 6vw, 80px);
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 0 20px #ff5fa2, 0 0 40px #ff5fa2, 0 0 80px #ff5fa2;
+    animation: finale-glow 2s ease-in-out infinite alternate;
+  }
+  @keyframes finale-glow {
+    0% { text-shadow: 0 0 10px #ff5fa2, 0 0 20px #ff5fa2, 0 0 40px #ff5fa2; }
+    100% { text-shadow: 0 0 20px #ff5fa2, 0 0 40px #ff5fa2, 0 0 80px #ff5fa2; }
+  }
+
+  /* Curtains */
+  .curtain {
+    position: fixed;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        #8b0000 0px,
+        #8b0000 15px,
+        #a80000 15px,
+        #a80000 30px
+      );
+    z-index: 10;
+    transform-origin: center;
+    will-change: transform, clip-path;
+  }
+  .curtain-left { left: 0;  box-shadow: inset -15px 0 25px rgba(0,0,0,0.6); }
+  .curtain-right{ right: 0; box-shadow: inset 15px 0 25px rgba(0,0,0,0.6); }
+  .curtain.fade-out { opacity: 0; pointer-events: none; transition: opacity 0.8s ease; }
+  .curtain-left  { transform-origin: 0% 0%; }
+  .curtain-right { transform-origin: 100% 0%; }
+
+  /* Hide header + lights when curtains are closed */
+  header, .lights-toggle {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    will-change: opacity;
+  }
+  body.curtains-closed header,
+  body.curtains-closed .lights-toggle {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  /* Mostra header e bottone luci solo quando NON sono .hidden */
+  body.curtains-open header:not(.hidden),
+  body.curtains-open .lights-toggle {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* mantieni questa */
+  header.hidden {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+    pointer-events: none;
+  }
+
+  body.curtains-open header { transition-delay: 0.3s; }
+  body.curtains-open .lights-toggle { transition-delay: 0.45s; }
+
+  /* === Impact Intro (spotlight + countdown) === */
+  .impact-intro {
+    position: fixed; inset: 0;
+    display: none; place-items: center;
+    z-index: 25;
+    background: radial-gradient(1200px 800px at 50% -10%, #00000088 0, #000000cc 60%);
+  }
+  .impact-intro.open { display: grid; }
+  .impact-inner { position: relative; text-align: center; color: #fff; }
+
+  .spotlight {
+  position: absolute; inset: -20vh -20vw;
+  background:
+    radial-gradient(40vh 40vh at 50% 50%, #ffffff33 0 40%, #ffffff12 55%, #0000 60%),
+    radial-gradient(40vh 40vh at 50% 50%, #ffffff15 0 10%, #0000 60%);
+  /* filter: blur(2px);  <-- comment out if perf is choppy */
+  opacity: .82;
+  animation: sweepDouble 5s ease-in-out 1 forwards;
+  pointer-events: none;
+  will-change: transform;
+  transform: translate3d(0,0,0);
+}
+
+  /* 📱 Make the spotlight smaller on phones */
+  @media (max-width: 480px) {
+    .spotlight {
+      inset: -10vh -10vw; /* tighter overscan on small screens */
+      background:
+        radial-gradient(22vh 22vh at 50% 9%, #ffffff33 0 40%, #ffffff12 55%, #0000 60%),
+        radial-gradient(22vh 22vh at 50% 9%, #ffffff15 0 10%, #0000 60%);
+      opacity: .72;               /* a touch dimmer so it doesn’t wash out */
+      animation-duration: 4s;     /* optional: slightly quicker sweep on phones */
+    }
+  }
+
+  /* 📱 Phone: small beam, BIG overscan so edges stay round */
+  @media (max-width: 480px) {
+    .spotlight {
+      /* give the gradient plenty of room offscreen */
+      inset: -32vh -32vw;                 /* was -10vh -10vw */
+      /* keep the smaller beam */
+      background:
+        radial-gradient(22vh 22vh at 50% 50%, #ffffff33 0 40%, #ffffff12 55%, #0000 60%),
+        radial-gradient(22vh 22vh at 50% 50%, #ffffff15 0 10%, #0000 60%);
+      opacity: .72;
+      animation-duration: 4s;
+      /* optional: a tiny blur helps hide any residual clipping on very small screens */
+      /* filter: blur(1px); */
+    }
+  }
+  
+
+  @keyframes sweepDouble {
+    0%   { transform: translateX(-22%) rotate(-6deg); }
+    25%  { transform: translateX( 22%) rotate( 6deg); }
+    50%  { transform: translateX(-22%) rotate(-6deg); }
+    75%  { transform: translateX( 22%) rotate( 6deg); }
+    100% { transform: translateX(-22%) rotate(-6deg); }
+  }
+
+
+  .impact-title {
+    font-size: clamp(26px, 6vw, 46px);
+    font-weight: 900;
+    letter-spacing: .2px;
+    margin: 0 0 8px;
+    text-shadow: 0 6px 24px #0008, 0 0 30px #ff5fa255;
+    animation: title-pop .55s ease both;
+  }
+  @keyframes title-pop { from { transform: translateY(8px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+  .impact-intro .countdown {
+    font-variant-numeric: tabular-nums;
+    font-weight: 900;
+    font-size: clamp(38px, 10vw, 90px);
+    line-height: 1;
+    margin: 10px 0;
+    text-shadow: 0 4px 20px #000a;
+    animation: pulse 0.75s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%   { transform: scale(1);   opacity: 1; }
+    50%  { transform: scale(1.06); opacity: .9; }
+    100% { transform: scale(1);   opacity: 1; }
+  }
+  .impact-sub { margin: 8px 0 0; opacity: .9; font-size: clamp(14px, 3.5vw, 18px); }
+  body.night .impact-intro {
+    background: radial-gradient(1200px 800px at 50% -10%, #0e1424cc 0, #02060fcc 60%);
+  }
+
+  #fireworks { transition: opacity .35s ease; }
+
+</style>
+
+<link rel="preload" as="video" href="Videos/dance_1.mp4" type="video/mp4" crossorigin>
+<link rel="preload" as="video" href="Videos/dance_1.mp4" type="video/mp4" crossorigin>
+
+</head>
+<body class="curtains-closed">
+
+<div class="curtain curtain-left"></div>
+<div class="curtain curtain-right"></div>
+
+<canvas id="fireworks"></canvas>
+
+<!-- Lights toggle -->
+<button class="lights-toggle" id="toggleNight" aria-pressed="false" title="Turn the lights off">🌙 Lights off</button>
+
+<div class="wrap" aria-live="polite">
+  <header aria-hidden="true" class="hidden">
+    <h1 id="headline">🎈 Scoppia i palloncini!</h1>
+    <p id="subtitle">No ansie, se li manchi tornano indietro!.</p>
+  </header>
+
+  <!-- Before-birthday curtain -->
+  <section class="gate" id="gate" role="dialog" aria-labelledby="gate-title" aria-modal="true">
+    <div class="gate-card">
+      <h2 id="gate-title">⏳ the party is not today 👀</h2>
+      <p class="countdown" id="countdown">starting the countdown</p>
+      <p class="tip" style="margin-top:8px;font-size:.9rem">for debug: <code>?dev=1</code></p>
+    </div>
+  </section>
+
+  <!-- Balloons playground -->
+  <main class="field" id="field" aria-label="Balloon field"></main>
+
+  <!-- Reveal modal -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="card">
+      <header>
+        <h3 id="modal-title">🎁 Sorpresa!</h3>
+      </header>
+      <div class="content" id="modal-content"></div>
+      <div class="actions">
+        <button class="secondary" id="close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">Fatto con il ❤️ e chatGPT</div>
+</div>
+
+<!-- Impact intro overlay -->
+<div class="impact-intro" id="impactIntro" aria-hidden="true">
+  <div class="impact-inner">
+    <div class="spotlight"></div>
+    <h2 class="impact-title" id="impactTitle">🎉 Pront*?</h2>
+    <div class="countdown" id="impactCount">5</div>
+    <!-- <p class="impact-sub">Scoppia i palloncini per svelare le sorprese</p> -->
+  </div>
+</div>
+
+<div class="finale-overlay" id="finale">
+  <div class="finale-message" id="finaleMessage"></div>
+</div>
+
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<!-- Curtains -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script>
+  let finalePending = false;
+
+  /* =========================
+     🔧 SETTINGS TO PERSONALIZE
+     ========================= */
+  const SETTINGS = {
+  name: "Name",
+  birthday: { month: 0, day: 1 },
+  reveals: [
+    { type: "text",  text: "HAPPY BIRTHDAAAYY ✨" },
+    { type: "video", src: "videos/dance_1.mp4", alt: "💃"},
+    { type: "video", src: "videos/dance_2.mp4", alt: "💃"},
+    { type: "text",  text: "Anothed rotation around the sun!" }
+  ],
+  colors: ["#ff6b6b","#ffd166","#06d6a0","#4cc9f0","#b5179e","#ff8fab","#f15bb5","#90dbf4"],
+  popSound: null
+};
+
+  /* Optional URL overrides: ?name=Sam&date=2025-10-03 */
+  const qp = new URLSearchParams(location.search);
+  const qName = qp.get("name");
+  const qDate = qp.get("date");
+  if (qName) SETTINGS.name = qName;
+  if (qDate) {
+    const [y,m,d] = qDate.split("-").map(Number);
+    if (!Number.isNaN(m) && !Number.isNaN(d)) SETTINGS.birthday = { month: m-1, day: d };
+  }
+
+  /* =========================
+     UTILITIES
+     ========================= */
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+  const rnd = (min, max) => Math.random() * (max - min) + min;
+  const sample = arr => arr[Math.floor(Math.random()*arr.length)];
+  const shuffle = arr => arr.sort(() => Math.random()-0.5);
+  const totalBalloons = () => SETTINGS.reveals.length;
+
+  /* Header helpers (brief hero message, then auto-hide) */
+  function setHeader(text, sub = "", hero = false) {
+    const h = document.querySelector("header");
+    const hl = document.getElementById("headline");
+    const st = document.getElementById("subtitle");
+    hl.textContent = text;
+    st.textContent = sub;
+    h.classList.toggle("hero", !!hero);
+    h.classList.remove("hidden");
+    if (window.gsap) {
+      gsap.fromTo(h, { y: -12, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45, ease: "power2.out" });
+    }
+  }
+  function hideHeader() {
+    const h = document.querySelector("header");
+    if (window.gsap) gsap.to(h, { y: -12, autoAlpha: 0, duration: .35, ease: "power2.inOut", onComplete: () => h.classList.add("hidden") });
+    else h.classList.add("hidden");
+  }
+
+
+  // Pefetch the videos
+  const videoCache = new Map(); // src -> objectURL
+
+  async function prefetchVideos() {
+    const vids = SETTINGS.reveals.filter(r => r.type === "video" && r.src);
+    for (const v of vids) {
+      if (videoCache.has(v.src)) continue;
+      try {
+        const res = await fetch(v.src, { cache: "force-cache", mode: "cors" });
+        if (!res.ok) continue;
+        const blob = await res.blob();
+        videoCache.set(v.src, URL.createObjectURL(blob));
+      } catch {}
+    }
+  }
+
+  /* =========================
+     DATE GATE
+     ========================= */
+  function isBirthdayToday() {
+    const t = new Date();
+    const debug = (new URLSearchParams(location.search)).get("dev") === "1";
+    return debug || (t.getMonth() === SETTINGS.birthday.month && t.getDate() === SETTINGS.birthday.day);
+  }
+  function updateCountdown() {
+    const now = new Date();
+    const y = now.getFullYear();
+    let target = new Date(y, SETTINGS.birthday.month, SETTINGS.birthday.day, 0, 0, 0);
+    if (now > target) target = new Date(y+1, SETTINGS.birthday.month, SETTINGS.birthday.day, 0, 0, 0);
+    const ms = target - now;
+    const d = Math.floor(ms/86400000);
+    const h = Math.floor(ms%86400000/3600000);
+    const m = Math.floor(ms%3600000/60000);
+    const s = Math.floor(ms%60000/1000);
+    $("#countdown").textContent = `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  /* =========================
+     BALLOON ENGINE (up-only; instant respawn from bottom)
+     ========================= */
+    let popped = 0;
+    let balloons = []; // {el, x, y, baseX, amp, freq, phase, speed, rotAmp, reveal, h, popped, startDelay}
+    let rafId = null;
+    let lastT = null;
+
+  function spawnBalloon(reveal) {
+    const el = document.createElement("div");
+    el.className = "balloon";
+    el.setAttribute("role","button");
+    el.setAttribute("aria-label","Pop to reveal");
+    el.style.setProperty("--c", sample(SETTINGS.colors));
+    el.style.setProperty("--br",
+      `${Math.round(rnd(45,55))}% ${Math.round(rnd(45,55))}% ${Math.round(rnd(40,52))}% ${Math.round(rnd(45,58))}% / ${Math.round(rnd(58,66))}% ${Math.round(rnd(58,66))}% ${Math.round(rnd(38,46))}% ${Math.round(rnd(38,46))}%`
+    );
+
+    /* tail (knot + string) */
+    const tail = document.createElement("div");
+    tail.className = "tail";
+    const knot = document.createElement("div");
+    knot.className = "knot";
+    knot.style.background = "var(--c)";
+
+    // SVG string instead of straight div
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("class", "string");
+    svg.setAttribute("viewBox", "0 0 2 100");
+    svg.setAttribute("aria-hidden", "true");
+
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute("d", "M1 0 C -2 25 4 50 1 100");
+    svg.appendChild(path);
+
+    tail.appendChild(knot);
+    tail.appendChild(svg);
+    el.appendChild(tail);
+
+    /* optional emoji face */
+    if (Math.random() < 0.8) {
+      const face = document.createElement("div");
+      face.style.position = "absolute";
+      face.style.inset = "0";
+      face.style.display = "grid";
+      face.style.placeItems = "center";
+      face.style.fontSize = "clamp(18px, 2.5vw, 28px)";
+      face.style.userSelect = "none";
+      face.style.filter = "drop-shadow(0 1px 2px #00000033)";
+      face.textContent = sample(["🥳","😄","🎂","✨","🤩","🎈","💖","😎"]);
+      el.appendChild(face);
+    }
+
+    $("#field").appendChild(el);
+
+    // measurements
+    const rect = el.getBoundingClientRect();
+    const w = rect.width || 100;
+    const h = rect.height || 120;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // lane (x) and spawn Y just BELOW the screen
+    const baseX = rnd(w/2 + 10, vw - w/2 - 10);
+    const y = rnd(vh + 30, vh + 140);   // spawn off-screen bottom
+
+    // place immediately (so no sideways slide is visible)
+    el.style.setProperty('--tx', `${Math.round(baseX)}px`);
+    el.style.setProperty('--ty', `${Math.round(y)}px`);
+    el.style.setProperty('--rot', `0deg`);
+
+    // motion params
+    const amp   = rnd(14, 36);
+    const freq  = rnd(0.25, 0.6);
+    const phase = rnd(0, Math.PI*2);
+    const speed = rnd(22, 68);
+    const rotAmp = rnd(2, 6);
+
+    const b = { el, x: baseX, y, baseX, amp, freq, phase, speed, rotAmp, reveal, h, popped:false, startDelay: 0 };
+
+    // interactions
+    el.addEventListener("click", () => popBalloon(b));
+    el.tabIndex = 0;
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.click(); }
+    });
+
+    return b;
+  }
+
+  function respawn(b) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const rect = b.el.getBoundingClientRect();
+    const w = rect.width || 100;
+
+    b.baseX = rnd(w/2 + 10, vw - w/2 - 10);
+    b.y = rnd(vh + 30, vh + 140); // place below instantly
+    b.amp = rnd(14, 36);
+    b.freq = rnd(0.25, 0.6);
+    b.phase = rnd(0, Math.PI*2);
+    b.speed = rnd(28, 60);
+    b.rotAmp = rnd(2, 6);
+  }
+
+  function createBalloons() {
+    $("#field").innerHTML = "";
+    balloons = [];
+    popped = 0;
+    const reveals = shuffle([...SETTINGS.reveals]);
+    for (const r of reveals) balloons.push(spawnBalloon(r));
+
+    lastT = null;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function tick(ts) {
+    if (lastT == null) lastT = ts;
+    const dt = Math.min(0.05, (ts - lastT) / 1000);
+    lastT = ts;
+
+    const wind = Math.sin(ts * 0.0006) * 8 + Math.sin(ts * 0.00027) * 5;
+
+    for (const b of balloons) {
+      if (b.popped) continue;
+
+      // move upward
+      b.y -= b.speed * dt;
+
+      // if fully above top, instantly reposition below
+      if (b.y + b.h < -20) respawn(b);
+
+      // sideways sway + subtle tilt
+      const t = ts / 1000;
+      const drift = Math.sin(t * 2 * Math.PI * b.freq + b.phase) * b.amp + wind;
+      b.x = b.baseX + drift;
+
+      // apply position via independent transform properties
+      b.el.style.setProperty('--tx', `${Math.round(b.x)}px`);
+      b.el.style.setProperty('--ty', `${Math.round(b.y)}px`);
+      b.el.style.setProperty('--rot', `${Math.sin(t * b.freq + b.phase) * b.rotAmp}deg`);
+    }
+
+    rafId = requestAnimationFrame(tick);
+  }
+
+  window.addEventListener("resize", () => {
+    const vw = window.innerWidth;
+    for (const b of balloons) b.baseX = Math.min(Math.max(b.baseX, 40), vw - 40);
+  });
+
+  /* =========================
+     🎇 FIREWORKS ENGINE
+     ========================= */
+  (function(){
+    const fwCanvas = document.getElementById("fireworks");
+    if (!fwCanvas) return;
+    const ctx = fwCanvas.getContext("2d");
+
+    function resize() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      fwCanvas.style.width = w + "px";
+      fwCanvas.style.height = h + "px";
+      fwCanvas.width = Math.floor(w * dpr);
+      fwCanvas.height = Math.floor(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    const PARTICLES = 36;
+    const GRAVITY = 0.02;
+    const FADE_RATE = 0.5;
+    const RADIUS = 3;
+
+    let bursts = [];
+    let lastT = 0;
+
+    function rnd(min, max){ return Math.random()*(max-min)+min; }
+    function sample(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    function spawnFirework() {
+      const x = Math.random() * window.innerWidth;
+      const y = Math.random() * window.innerHeight * 0.5;
+      const color = sample(SETTINGS.colors);
+      const particles = [];
+      for (let i = 0; i < PARTICLES; i++) {
+        const angle = (i / PARTICLES) * Math.PI * 2;
+        const speed = rnd(2, 5);
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          alpha: 1,
+          color
+        });
+      }
+      bursts.push(particles);
+    }
+
+    function update(dt) {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      bursts.forEach(particles => {
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += GRAVITY;
+          p.alpha -= dt * FADE_RATE;
+        });
+      });
+      bursts = bursts.filter(particles => particles.some(p => p.alpha > 0));
+      bursts.forEach(particles => {
+        particles.forEach(p => {
+          if (p.alpha <= 0) return;
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, RADIUS, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    function loop(ts) {
+      const dt = ((ts - lastT) || 16) / 1000;
+      lastT = ts;
+
+      update(dt);
+
+      const FIREWORKS_PER_SEC = 1.6;
+      if (Math.random() < dt * FIREWORKS_PER_SEC) {
+        spawnFirework();
+      }
+
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  })();
+
+  /* =========================
+     POP / CONFETTI / MODAL
+     ========================= */
+  function popBalloon(b) {
+    if (b.popped) return;
+    b.popped = true;
+
+    if (SETTINGS.popSound) {
+      const a = new Audio(SETTINGS.popSound);
+      a.volume = 0.6;
+      a.play().catch(()=>{});
+    }
+
+    b.el.classList.add("pop");
+    b.el.style.pointerEvents = "none";
+    popped++;
+
+    const rect = b.el.getBoundingClientRect();
+    confetti({
+      particleCount: 90,
+      spread: 70,
+      origin: {
+        x: (rect.left + rect.width/2) / window.innerWidth,
+        y: (rect.top + rect.height/2) / window.innerHeight
+      }
+    });
+
+    setTimeout(() => showReveal(b.reveal), 120);
+
+    if (popped === SETTINGS.reveals.length) {
+      finalePending = true;
+    }
+  }
+
+  function showReveal(data) {
+    const box = $("#modal-content");
+    box.innerHTML = "";
+
+    // 🎯 Update modal title dynamically
+    const titleEl = $("#modal-title");
+    if (data.title) {
+      titleEl.textContent = data.title;
+    } else if (data.type === "image" && data.alt) {
+      titleEl.textContent = `${data.alt}`;
+    } else if (data.type === "text") {
+      titleEl.textContent = "Message";
+    } else if (data.type === "video") {
+      titleEl.textContent = "💃";
+    } else {
+      titleEl.textContent = "🎁 Surprise!";
+    }
+
+    if (data.type === "text") {
+      const p = document.createElement("p");
+      p.textContent = data.text;
+      p.style.fontSize = "1.2rem";
+      p.style.margin = "0 0 6px";
+      box.appendChild(p);
+      confetti({ particleCount: 60, spread: 80, origin: { y: 0.7 } });
+    } else if (data.type === "image") {
+      const img = document.createElement("img");
+      img.src = data.src;
+      img.alt = data.alt || "Birthday memory";
+      box.appendChild(img);
+    } else if (data.type === "video") {
+      const v = document.createElement("video");
+      v.controls = true;
+      v.autoplay = true;
+      v.playsInline = true;
+      v.muted = true;          // helps instant autoplay on mobile
+      v.preload = "auto";
+      if (data.poster) v.poster = data.poster;
+
+      const src = document.createElement("source");
+      src.type = "video/mp4";
+      src.src = videoCache.get(data.src) || data.src;  // <-- blob if available
+      v.appendChild(src);
+
+      v.load(); // kick decoding immediately
+      box.appendChild(v);
+    } else {
+      const p = document.createElement("p");
+      p.textContent = "Surprise!";
+      box.appendChild(p);
+    }
+
+    $("#modal").classList.add("open");
+  }
+
+  function closeModal() {
+    $("#modal").classList.remove("open");
+    
+    // If finale is waiting, run it now
+    if (finalePending) {
+      finalePending = false;
+      runGrandFinale();
+    }
+  }
+
+  function runGrandFinale() {
+    const finale = $("#finale");
+    const msg = $("#finaleMessage");
+
+    msg.textContent = `HAPPY BIRTHDAY ${SETTINGS.name.toUpperCase()} !!!`;
+    finale.classList.add("show");
+
+    // Optional sound
+    try {
+      const audio = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_8a6f00696d.mp3");
+      audio.volume = 0.5;
+      audio.play().catch(()=>{});
+    } catch(e){}
+
+    // Confetti bursts
+    const origins = [
+      { x: 0.2, y: 0.7 },
+      { x: 0.8, y: 0.7 },
+      { x: 0.5, y: 0.5 },
+      { x: 0.3, y: 0.4 },
+      { x: 0.7, y: 0.4 },
+    ];
+
+    origins.forEach((o, i) => {
+      setTimeout(() => {
+        confetti({
+          particleCount: 160,
+          spread: 160,
+          origin: o,
+          startVelocity: 45,
+          ticks: 120
+        });
+      }, i * 500);
+    });
+
+    setTimeout(() => {
+      finale.style.transition = "opacity 1.5s ease";
+      finale.style.opacity = "0";
+      setTimeout(() => finale.remove(), 2000);
+    }, origins.length * 500 + 1500);
+  }
+
+  /* =========================
+     IMPACT INTRO
+     ========================= */
+  function runImpactIntro(onDone) {
+    const el = document.getElementById("impactIntro");
+    const title = document.getElementById("impactTitle");
+    const count = document.getElementById("impactCount");
+
+    // Per aggiungere il nome
+    // ${SETTINGS.name} 
+    title.textContent = `Ready ?`;
+
+    el.classList.add("open");
+
+    // Optional sting
+    try {
+      const a = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_8a6f00696d.mp3");
+      a.volume = 0.35; a.play().catch(()=>{});
+    } catch(e){}
+
+    const steps = ["5","4","3","2","1","GO!"];
+    let i = 0;
+    const tick = () => {
+      count.textContent = steps[i++];
+      if (i < steps.length) {
+        setTimeout(tick, 700);
+      } else {
+        // Fade out overlay then callback
+        if (window.gsap) {
+          gsap.to(el, {
+            opacity: 0, duration: 0.6, ease: "power2.inOut",
+            onComplete: () => { el.classList.remove("open"); el.style.opacity = ""; onDone && onDone(); }
+          });
+        } else {
+          el.style.opacity = "0";
+          setTimeout(() => { el.classList.remove("open"); el.style.opacity = ""; onDone && onDone(); }, 600);
+        }
+      }
+    };
+    setTimeout(tick, 450);
+  }
+
+  /* =========================
+     GATE / INIT + NIGHT TOGGLE
+     ========================= */
+  function openParty() {
+    $("#gate").style.display = "none";
+    document.body.style.overflow = "hidden";
+
+    // Show an impact intro; when done, start balloons
+    runImpactIntro(() => {
+      // Brief hero header then auto-hide
+      setHeader(`🎈 pop the balloons!`, `there are ${totalBalloons()} hidden surprises`, true);
+      setTimeout(hideHeader, 7000);
+
+      createBalloons();
+      confetti({ particleCount: 220, spread: 140, origin: { y: 0.7 } });
+    });
+    prefetchVideos();
+  }
+
+  function init() {
+    // night toggle
+    const btn = $("#toggleNight");
+    const applyLabel = () => {
+      const isNight = document.body.classList.contains("night");
+      btn.textContent = isNight ? "☀️ Lights on" : "🌙 Lights off";
+      btn.setAttribute("aria-pressed", String(isNight));
+      btn.title = isNight ? "Turn the lights on" : "Turn the lights off";
+    };
+    btn.addEventListener("click", () => {
+      document.body.classList.toggle("night");
+      applyLabel();
+    });
+    applyLabel();
+
+    // --- Curtain opening animation ---
+    const leftCurtain = document.querySelector('.curtain-left');
+    const rightCurtain = document.querySelector('.curtain-right');
+
+    function openCurtains() {
+      leftCurtain.style.zIndex = '200';
+      rightCurtain.style.zIndex = '200';
+
+      gsap.to(leftCurtain, {
+        xPercent: -100,
+        skewX: -15,
+        scaleY: 1.1,
+        duration: 2,
+        ease: "power2.inOut"
+      });
+
+      gsap.to(rightCurtain, {
+        xPercent: 100,
+        skewX: 15,
+        scaleY: 1.1,
+        duration: 2,
+        ease: "power2.inOut",
+        delay: 0.03
+      });
+
+      setTimeout(() => {
+        document.body.classList.remove('curtains-closed');
+        document.body.classList.add('curtains-open');
+      }, 2000);
+
+      const fw = document.getElementById('fireworks');
+      fw.style.opacity = '0';                 // hide now
+      setTimeout(() => fw.style.opacity = '1', 5500); 
+
+    }
+
+    // gate logic + curtain timing
+    const isOpen = isBirthdayToday();
+    if (isOpen) {
+      // hide the gate immediately so it doesn't flash on top of curtains
+      $("#gate").style.display = "none";
+
+      // bring curtains to front and open after 1 second
+      setTimeout(() => {
+        openCurtains();
+        openParty();
+      }, 1000);
+    } else {
+      // Not the day: curtains remain closed behind the message
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+    }
+
+    // modal wiring
+    $("#close").addEventListener("click", closeModal);
+    $("#modal").addEventListener("click", (e) => { if (e.target.id === "modal") closeModal(); });
+
+    const debug = (new URLSearchParams(location.search)).get("dev") === "1";
+    if (debug && !isOpen) openParty();
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
